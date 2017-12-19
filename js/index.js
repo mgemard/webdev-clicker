@@ -125,7 +125,7 @@ function updateCanvas() {
   let x, y;
 
   // updade datas
-  lineHistory.push(lines);
+  if (lines !== 0) { lineHistory.push(lines); }
   if (lines > lineMax) { lineMax = lines; }
 
   // clear canvas
@@ -139,29 +139,11 @@ function updateCanvas() {
   drawYAxis();
   // Y axis must be called before x axis to get y-label width
   drawXAxis();
-  // drawLines();
-}
-
-function drawLines() {
-  // axisXMax
-  // axisYMax
-  let currentTime = lineHistory.length;
-  // console.log(currentTime);
-
-  if (currentTime < AXIS_X_START_WIDTH) {
-
-    lineHistory.forEach((line) => {
-
-    });
-
-  } else {
-
-    lineHistory.forEach(() => {
-
-    });
+  if (lineHistory.length >= 2) {
+    drawLines();
   }
-
 }
+
 
 function drawXAxis() {
 
@@ -230,6 +212,36 @@ function calculateTicks(min, max, tickCount) {
     ticks.push(i);
   }
   return ticks;
+}
+
+function drawLines() {
+  // axisXMax
+  // axisYMax
+  let currentTime = lineHistory.length;
+  console.log(currentTime);
+  if (currentTime < AXIS_X_START_WIDTH) {
+    for (let i = 0; i < lineHistory.length - 1; i++) {
+      ctx.beginPath();
+      ctx.strokeStyle = 'green';
+      ctx.lineWidth=5;
+      ctx.moveTo(canvas.width - (canvas.width - axisYLabelWidth)*(AXIS_X_START_WIDTH-i)/(AXIS_X_START_WIDTH),
+        (canvas.height - graphMargin) * (axisYMax - lineHistory[i]) / (axisYMax));
+      ctx.lineTo(canvas.width - (canvas.width - axisYLabelWidth)*(AXIS_X_START_WIDTH-(i+1))/(AXIS_X_START_WIDTH),
+        (canvas.height - graphMargin) * (axisYMax - lineHistory[i + 1]) / (axisYMax));
+      ctx.stroke();
+    }
+  } else {
+    for (let i = 0; i < lineHistory.length - 1; i++) {
+      ctx.beginPath();
+      ctx.strokeStyle = 'green';
+      ctx.lineWidth=5;
+      ctx.moveTo(canvas.width - (canvas.width - axisYLabelWidth)*(currentTime-i)/(currentTime),
+        (canvas.height - graphMargin) * (axisYMax - lineHistory[i]) / (axisYMax));
+      ctx.lineTo(canvas.width - (canvas.width - axisYLabelWidth)*(currentTime-i)/(currentTime),
+        (canvas.height - graphMargin) * (axisYMax - lineHistory[i + 1]) / (axisYMax));
+      ctx.stroke();
+    }
+  }
 }
 
 // business logic
