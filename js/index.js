@@ -27,7 +27,7 @@ const algorithms = [
 // canvas datas
 const canvas = document.getElementById("productionOverTime");
 const ctx = canvas.getContext('2d');
-const graphMargin = 40;
+const graphMargin = 0;
 const originX = graphMargin, originY = canvas.height - graphMargin;
 let axisYMax = AXIS_Y_START_WIDTH,
   axisXMax = AXIS_X_START_WIDTH;
