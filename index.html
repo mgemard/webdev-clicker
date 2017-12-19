@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Webdev Clicker</title>
+
+
+
+  <link rel="stylesheet" href="css/style.css">
+
+
+</head>
+
+<body>
+  <!DOCTYPE html>
+  <html lang="fr">
+
+  <head>
+    <meta charset="utf-8">
+    <title>Webdev clicker</title>
+
+    <!-- meta -->
+    <meta name="description" content="Cookie clicker like for web developers">
+    <meta name="author" content="Samuel Bouchet">
+  </head>
+
+  <body>
+    <!-- <div style="display:flex;flex-wrap:wrap"> -->
+    <!-- TITLE -->
+    <header>
+      <h1>Webdev clicker</h1>
+    </header>
+    <!-- <div style="position: absolute;right:20px;top:10px;text-align: left;"> -->
+    <!-- <div>
+        Objectifs :
+        <ul>
+          <li>Afficher une vidéo lorsqu'on débloque une
+            <br/>nouvelle option</li>
+          <li>Ajouter un bonus sur condition regex
+            <br/>(si le 2eme caractère est un 2 il devient un 3)</li>
+          <li>Canvas pour visualiser la production</li>
+          <li>Rendre les données persistantes</li>
+          <li>Ajouter un feedback sur les boutons (transition)</li>
+          <li>Rendre la page responsive</li>
+          <li>Utiliser un serviceworker par type d'algorithme</li>
+        </ul>
+      </div>
+
+    </div> -->
+
+
+    <!-- CONTENT -->
+    <div class="content">
+      <div class="block">
+        <button onclick="code()">Click to code_</button>
+      </div>
+      <div class="block">
+        You have produced
+        <br/>
+        <span id="count">0</span> lines.
+      </div>
+
+      <canvas id="productionOverTime" width='480' height='320'></canvas>
+
+      <div class="separator"></div>
+
+      <div id="productionunits"></div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+      <div id="popup" class="popup" onclick="this.className='popup'">
+        <div class="block">
+          Un nouvel algorithme a été découvert !
+        </div>
+        <video src="https://zippy.gfycat.com/WavyMeanDesertpupfish.webm" height="150" loop poster="https://cdn.pixabay.com/photo/2017/11/11/23/31/curtain-2940999__340.png"
+          autoplay>
+          Votre navigateur ne permet pas de lire les vidéos. Mais vous pouvez toujours
+          <a href="https://zippy.gfycat.com/WavyMeanDesertpupfish.webm">la télécharger</a> !
+        </video>
+        <div class="block">
+          <button>Super !</button>
+        </div>
+      </div>
+    </footer>
+
+  </body>
+
+  </html>
+
+  <script src="js/index.js"></script>
+
+</body>
+
+</html>
