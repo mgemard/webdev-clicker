@@ -215,32 +215,31 @@ function calculateTicks(min, max, tickCount) {
 }
 
 function drawLines() {
-  // axisXMax
-  // axisYMax
   let currentTime = lineHistory.length;
   console.log(currentTime);
   if (currentTime < AXIS_X_START_WIDTH) {
-    for (let i = 0; i < lineHistory.length - 1; i++) {
-      ctx.beginPath();
-      ctx.strokeStyle = 'green';
-      ctx.lineWidth=5;
-      ctx.moveTo(canvas.width - (canvas.width - axisYLabelWidth)*(AXIS_X_START_WIDTH-i)/(AXIS_X_START_WIDTH),
+    ctx.beginPath();
+    ctx.strokeStyle = 'green';
+    ctx.lineWidth = 5;
+    ctx.moveTo(canvas.width - (canvas.width - axisYLabelWidth) * (AXIS_X_START_WIDTH - 0) / (AXIS_X_START_WIDTH),
+      (canvas.height - graphMargin) * (axisYMax - lineHistory[0]) / (axisYMax));
+    for (let i = 1; i < lineHistory.length; i++) {
+      ctx.lineTo(canvas.width - (canvas.width - axisYLabelWidth) * (AXIS_X_START_WIDTH - i) / (AXIS_X_START_WIDTH),
         (canvas.height - graphMargin) * (axisYMax - lineHistory[i]) / (axisYMax));
-      ctx.lineTo(canvas.width - (canvas.width - axisYLabelWidth)*(AXIS_X_START_WIDTH-(i+1))/(AXIS_X_START_WIDTH),
-        (canvas.height - graphMargin) * (axisYMax - lineHistory[i + 1]) / (axisYMax));
-      ctx.stroke();
+
     }
+    ctx.stroke();
   } else {
-    for (let i = 0; i < lineHistory.length - 1; i++) {
-      ctx.beginPath();
-      ctx.strokeStyle = 'green';
-      ctx.lineWidth=5;
-      ctx.moveTo(canvas.width - (canvas.width - axisYLabelWidth)*(currentTime-i)/(currentTime),
+    ctx.beginPath();
+    ctx.strokeStyle = 'green';
+    ctx.lineWidth = 5;
+    ctx.moveTo(canvas.width - (canvas.width - axisYLabelWidth) * (currentTime - 0) / (currentTime),
+      (canvas.height - graphMargin) * (axisYMax - lineHistory[0]) / (axisYMax));
+    for (let i = 1; i < lineHistory.length; i++) {
+      ctx.lineTo(canvas.width - (canvas.width - axisYLabelWidth) * (currentTime - i) / (currentTime),
         (canvas.height - graphMargin) * (axisYMax - lineHistory[i]) / (axisYMax));
-      ctx.lineTo(canvas.width - (canvas.width - axisYLabelWidth)*(currentTime-i)/(currentTime),
-        (canvas.height - graphMargin) * (axisYMax - lineHistory[i + 1]) / (axisYMax));
-      ctx.stroke();
     }
+    ctx.stroke();
   }
 }
 
