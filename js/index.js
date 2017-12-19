@@ -4,12 +4,16 @@
 // config
 const UPDATE_TIME = 0.1; // s
 const RENDER_TIME = 0.1; // s
+// canvas 
+const TICK_Y_COUNT = 3;
+const TICK_X_COUNT = 4;
+const AXIS_X_START_WIDTH = 100;
+const AXIS_Y_START_WIDTH = 10;
 
 // initial data
-let drawCanvas = false;
 let lines = 0;
-let productions = [];
-let currentProd;
+let lineMax = 0;
+let lineHistory = [];
 const algorithms = [
   { name: "IA optimiste", cooldown: 5, cost: 6, unlocked: false, owned: 0 },
   { name: "IA avancée", cooldown: 2, cost: 20, unlocked: false, owned: 0 },
@@ -20,6 +24,15 @@ const algorithms = [
   { name: "Algorithme post-Singularité génération 2", cooldown: 0.01, cost: 10000, unlocked: false, owned: 0 }
 ]
 
+// canvas datas
+const canvas = document.getElementById("productionOverTime");
+const ctx = canvas.getContext('2d');
+const graphMargin = 40;
+const originX = graphMargin, originY = canvas.height - graphMargin;
+let axisYMax = AXIS_Y_START_WIDTH,
+  axisXMax = AXIS_X_START_WIDTH;
+let axisYLabelWidth = 0;
+
 // global functions
 function update() {
   let produced = 0;
@@ -28,15 +41,7 @@ function update() {
   })
   lines += produced;
 
-  if (currentProd > 0) {
-    if (produced !== currentProd) {
-      drawCanvas = true;
-      productions.push(produced);
-    }
-  }
-  currentProd = produced;
 
-  
   // regexp ici
 }
 
@@ -46,8 +51,8 @@ function render() {
     algorithms.forEach(a => {
       a.unlocked = a.unlocked || isUnlockable(a, lines)
     })
-    updateTemplate(algorithms)
-    showPopup()
+    updateTemplate(algorithms);
+    showPopup();
   }
   updateLineCount();
   updateCanvas();
@@ -59,8 +64,8 @@ function showPopup() {
 
 // user actions
 function code() {
-  lines++
-  updateLineCount()
+  lines++;
+  updateLineCount();
 }
 
 function develop(name) {
@@ -77,11 +82,12 @@ function develop(name) {
 function updateLineCount() {
   document.getElementById("count").innerText = String(Math.floor(lines));
 }
+
 function updateTemplate() {
   const algorithmsHtml = algorithms
     .filter(a => a.unlocked)
     .map(a => createAlgorithmTemplate(a))
-    .join('')
+    .join('');
   document.getElementById("productionunits").innerHTML = algorithmsHtml;
 }
 
@@ -89,7 +95,7 @@ function createAlgorithmTemplate(algorithm) {
   return `
       <div class="productionunit">
           <div>
-            <button onclick="develop('${algorithm.name}')">Programmer un·e ${algorithm.name}</button>
+            <button onclick="develop('${algorithm.name}')">Programmer une ${algorithm.name}</button>
           </div>
           <div class="line">
             Cost ${algorithm.cost} line to hire.
@@ -105,69 +111,136 @@ function createAlgorithmTemplate(algorithm) {
 }
 
 function updateCanvas() {
-  const c = document.getElementById("productionOverTime");
-  const ctx = c.getContext('2d');
-  ctx.clearRect(0, 0, c.width, c.height);
-  const originX = 30, originY = 290
-  let x, y, i = 0;
-
-  // background
-  ctx.fillStyle = 'dark';
-  ctx.fillRect(0, 0, 480, 320);
-  // axis
-  // horizontal
-  ctx.beginPath(); ctx.strokeStyle = 'grey';
-  ctx.moveTo(30, originY - 30); ctx.lineTo(450, originY - 30); ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(30, c.height / 2); ctx.lineTo(450, c.height / 2); ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(30, 60); ctx.lineTo(450, 60); ctx.stroke();
-  // vertical
-  ctx.beginPath();
-  ctx.moveTo(originX + 50, 30); ctx.lineTo(originX + 50, originY); ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(180, 30); ctx.lineTo(180, originY); ctx.stroke();
-  ctx.beginPath();
-  ctx.moveTo(290, 30); ctx.lineTo(290, originY); ctx.stroke();
-  ctx.moveTo(400, 30); ctx.lineTo(400, originY); ctx.stroke();
-
-
-  // add axis labels
-  ctx.font = "20px";
-  ctx.strokeText("Lines", 20, 30);
-  ctx.strokeText("Time", 420, 300);
-  // draw function
-
-
-  // we draw production
-  console.log(productions[productions.length - 1]);
-  const size = productions.length;
-
-  if (drawCanvas) {
-    //   console.log((0) * c.width / size, -320 + productions[0] * c.height / currentProd);
-    //   console.log((0 + 1) * c.width / size, -320 + productions[0 + 1] * c.height / currentProd);
-
-    for (let i = 1; i < size; i++) {
-      ctx.beginPath(); ctx.strokeStyle = 'green';
-      console.log((i - 1) * c.width / size, -320 + productions[i - 1] * c.height / currentProd);
-      console.log((i) * c.width / size, -320 + productions[i] * c.height / currentProd);
-      ctx.moveTo((i - 1) * c.width / size, -320 + productions[i - 1] * c.height / currentProd);
-      ctx.lineTo((i) * c.width / size, -320 + productions[i] * c.height / currentProd);
-      ctx.stroke();
-    }
+  // we first check if the browser has been resized
+  if (window.innerWidth < 480) {
+    ctx.canvas.width = window.innerWidth;
+    ctx.canvas.height = window.innerWidth * 16 / 9;
+  } else {
+    ctx.canvas.width = 854;
+    ctx.canvas.height = 480;
 
   }
+
+  // variables
+  let x, y;
+
+  // updade datas
+  lineHistory.push(lines);
+  if (lines > lineMax) { lineMax = lines; }
+
+  // clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // draw background
+  ctx.fillStyle = 'dark';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // axis
+  drawYAxis();
+  // Y axis must be called before x axis to get y-label width
+  drawXAxis();
+  // drawLines();
+}
+
+function drawLines() {
+  // axisXMax
+  // axisYMax
+  let currentTime = lineHistory.length;
+  // console.log(currentTime);
+
+  if (currentTime < AXIS_X_START_WIDTH) {
+
+    lineHistory.forEach((line) => {
+
+    });
+
+  } else {
+
+    lineHistory.forEach(() => {
+
+    });
+  }
+
+}
+
+function drawXAxis() {
+
+  let currentTime = lineHistory.length;
+  if (currentTime > axisXMax) {
+    axisXMax = currentTime;
+  }
+
+  let axisX = calculateTicks(0, axisXMax, TICK_X_COUNT);
+  axisX.forEach((time) => {
+    // vertical line
+    ctx.beginPath();
+    ctx.strokeStyle = 'grey';
+    ctx.moveTo(canvas.width - ((axisXMax - time) / axisXMax) * (canvas.width - axisYLabelWidth), canvas.height - graphMargin);
+    ctx.lineTo(canvas.width - ((axisXMax - time) / axisXMax) * (canvas.width - axisYLabelWidth), 0);
+    ctx.stroke();
+  });
+}
+
+function drawYAxis() {
+  if (lineMax > 10) {
+    axisYMax = lineMax;
+  }
+  let axisY = calculateTicks(0, axisYMax, TICK_Y_COUNT);
+
+  ctx.font = "20px Arial";
+  ctx.fillStyle = 'white';
+  axisYLabelWidth = ctx.measureText(axisY[axisY.length - 1]).width;
+  // getting the height of the text is not quite as easy, so
+  // the drawback is that the label is not aligned
+  axisY.forEach((line) => {
+    // Y axis label
+    ctx.fillText(line, 0,
+      (canvas.height - graphMargin) * (axisYMax - line) / axisYMax);
+    // horizontal line
+    ctx.beginPath();
+    ctx.strokeStyle = 'grey';
+    ctx.moveTo(axisYLabelWidth, (canvas.height - graphMargin) * (axisYMax - line) / axisYMax);
+    ctx.lineTo(canvas.width, (canvas.height - graphMargin) * (axisYMax - line) / axisYMax);
+    ctx.stroke();
+  });
+}
+
+// Calculate n ticks for an arbitrary range with min x and max y
+// Return an array containing the intervals
+// calculateTicks(1, 12, 5); // [2, 4, 6, 8, 10, 12]
+// calculateTicks(0, 12, 4); // [0, 5, 10]
+function calculateTicks(min, max, tickCount) {
+  var span = max - min,
+    step = Math.pow(10, Math.floor(Math.log(span / tickCount) / Math.LN10)),
+    err = tickCount / span * step;
+
+  // Filter ticks to get closer to the desired count.
+  if (err <= .15) step *= 10;
+  else if (err <= .35) step *= 5;
+  else if (err <= .75) step *= 2;
+
+  // Round start and stop values to step interval.
+  var tstart = Math.ceil(min / step) * step,
+    tstop = Math.floor(max / step) * step + step * .5,
+    ticks = [],
+    x;
+
+  // now generate ticks
+  for (i = tstart; i < tstop; i += step) {
+    ticks.push(i);
+  }
+  return ticks;
 }
 
 // business logic
 function getUnlockableFactoriesCount(algorithms, lines) {
-  return algorithms.filter(a => isUnlockable(a, lines)).length
+  return algorithms.filter(a => isUnlockable(a, lines)).length;
 }
 
 function isUnlockable(algorithm, lines) {
-  return !algorithm.unlocked && algorithm.cost < lines
+  return !algorithm.unlocked && algorithm.cost < lines;
 }
 
 // start
-setInterval(render, RENDER_TIME * 1000)
-setInterval(update, UPDATE_TIME * 1000)
+setInterval(render, RENDER_TIME * 1000);
+setInterval(update, UPDATE_TIME * 1000);
