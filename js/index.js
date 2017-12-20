@@ -292,3 +292,4 @@ function isUnlockable(algorithm, lines) {
 updateTemplate();
 setInterval(render, RENDER_TIME * 1000);
 setInterval(update, UPDATE_TIME * 1000);
+setInterval(save, 1000*60);
