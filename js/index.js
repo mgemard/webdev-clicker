@@ -11,10 +11,10 @@ const AXIS_X_START_WIDTH = 100;
 const AXIS_Y_START_WIDTH = 10;
 
 // initial data
-let lines = 0;
 let lineMax = 0;
-let lineHistory = [];
-const algorithms = [
+let lineHistory = load('lineHistory', []);
+let lines = lineHistory.length === 0 ? 0 : lineHistory[lineHistory.length - 1];
+const algorithmsInit = [
   { name: "IA optimiste", cooldown: 5, cost: 6, unlocked: false, owned: 0 },
   { name: "IA avancée", cooldown: 2, cost: 20, unlocked: false, owned: 0 },
   { name: "Deep learning algorithm", cooldown: 1, cost: 50, unlocked: false, owned: 0 },
@@ -22,7 +22,29 @@ const algorithms = [
   { name: "Algorithme alien avancé", cooldown: 0.1, cost: 500, unlocked: false, owned: 0 },
   { name: "Algorithme post-Singularité", cooldown: 0.05, cost: 3000, unlocked: false, owned: 0 },
   { name: "Algorithme post-Singularité génération 2", cooldown: 0.01, cost: 10000, unlocked: false, owned: 0 }
-]
+];
+let algorithms = load('algorithms', algorithmsInit);
+
+// // check if there is something in localstorage
+// if (typeof localStorage !== 'undefined') {
+//   if (localStorage.lineHistory) {
+//     lineHistory = JSON.parse(localStorage.lineHistory);
+//     lines = lineHistory[lineHistory.length - 1];
+//     algorithms = JSON.parse(localStorage.algorithms);
+//     updateTemplate();
+//   }
+// } else {
+//   // localStorage not defined
+// }
+
+function load(identifiant, defaultValue) {
+  if (typeof (localStorage) !== 'undefined' && localStorage.getItem(identifiant) !== null) {
+    return JSON.parse(localStorage.getItem(identifiant))
+  }
+  return defaultValue;
+
+}
+
 
 // canvas datas
 const canvas = document.getElementById("productionOverTime");
@@ -33,6 +55,7 @@ let axisYMax = AXIS_Y_START_WIDTH,
   axisXMax = AXIS_X_START_WIDTH;
 let axisYLabelWidth = 0;
 
+
 // global functions
 function update() {
   let produced = 0;
@@ -40,7 +63,6 @@ function update() {
     produced += a.owned * UPDATE_TIME / a.cooldown
   })
   lines += produced;
-
 
   // regexp ici
 }
@@ -51,7 +73,7 @@ function render() {
     algorithms.forEach(a => {
       a.unlocked = a.unlocked || isUnlockable(a, lines)
     })
-    updateTemplate(algorithms);
+    updateTemplate();
     showPopup();
   }
   updateLineCount();
@@ -68,13 +90,30 @@ function code() {
   updateLineCount();
 }
 
+function save() {
+  // check if there is something in localstorage
+  if (typeof localStorage !== 'undefined') {
+    localStorage.lineHistory = JSON.stringify(lineHistory);
+    localStorage.algorithms = JSON.stringify(algorithms);
+  }
+}
+
+function reset() {
+  // initial data
+  lineMax = 0;
+  lineHistory = [];
+  lines = 0;
+  algorithms = algorithmsInit;
+  save();
+}
+
 function develop(name) {
   const a = algorithms.find(a => a.name === name);
   if (a !== null && lines > a.cost) {
     lines -= a.cost;
     a.owned += 1;
     a.cost = Math.ceil(a.cost * 1.5);
-    updateTemplate(algorithms);
+    updateTemplate();
   }
 }
 
@@ -112,13 +151,12 @@ function createAlgorithmTemplate(algorithm) {
 
 function updateCanvas() {
   // we first check if the browser has been resized
-  if (window.innerWidth < 480) {
+  if (window.innerWidth < 854) {
     ctx.canvas.width = window.innerWidth;
-    ctx.canvas.height = window.innerWidth * 16 / 9;
+    ctx.canvas.height = window.innerWidth * 9 / 16;
   } else {
     ctx.canvas.width = 854;
     ctx.canvas.height = 480;
-
   }
 
   // variables
@@ -216,7 +254,6 @@ function calculateTicks(min, max, tickCount) {
 
 function drawLines() {
   let currentTime = lineHistory.length;
-  console.log(currentTime);
   if (currentTime < AXIS_X_START_WIDTH) {
     ctx.beginPath();
     ctx.strokeStyle = 'green';
@@ -226,7 +263,6 @@ function drawLines() {
     for (let i = 1; i < lineHistory.length; i++) {
       ctx.lineTo(canvas.width - (canvas.width - axisYLabelWidth) * (AXIS_X_START_WIDTH - i) / (AXIS_X_START_WIDTH),
         (canvas.height - graphMargin) * (axisYMax - lineHistory[i]) / (axisYMax));
-
     }
     ctx.stroke();
   } else {
@@ -253,5 +289,6 @@ function isUnlockable(algorithm, lines) {
 }
 
 // start
+updateTemplate();
 setInterval(render, RENDER_TIME * 1000);
 setInterval(update, UPDATE_TIME * 1000);
