@@ -11,7 +11,7 @@ const AXIS_X_START_WIDTH = 100;
 const AXIS_Y_START_WIDTH = 10;
 
 // initial data
-let lineMax = 0;
+let lineMax = load('lineMax', 0);
 let lineHistory = load('lineHistory', []);
 let lines = lineHistory.length === 0 ? 0 : lineHistory[lineHistory.length - 1];
 const algorithmsInit = [
@@ -99,6 +99,7 @@ function save() {
   if (typeof localStorage !== 'undefined') {
     localStorage.lineHistory = JSON.stringify(lineHistory);
     localStorage.algorithms = JSON.stringify(algorithms);
+    localStorage.lineMax = JSON.stringify(lineMax);
   }
 }
 
