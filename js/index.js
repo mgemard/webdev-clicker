@@ -64,6 +64,10 @@ function update() {
   })
   lines += produced;
 
+  if (lineHistory.length >= 100000) {
+    lineHistory = lineHistory.filter((line, i) => i + 1 % 2);
+  }
+
   // regexp ici
 }
 
@@ -105,6 +109,7 @@ function reset() {
   lines = 0;
   algorithms = algorithmsInit;
   save();
+  updateTemplate();
 }
 
 function develop(name) {
@@ -292,4 +297,4 @@ function isUnlockable(algorithm, lines) {
 updateTemplate();
 setInterval(render, RENDER_TIME * 1000);
 setInterval(update, UPDATE_TIME * 1000);
-setInterval(save, 1000*60);
+setInterval(save, 1000 * 60);
